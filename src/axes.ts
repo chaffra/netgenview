@@ -55,6 +55,7 @@ export class Axes extends RenderObject {
           name: this.name,
           position: new THREE.Vector3().fromArray(vals, 2 - i),
           text: axes_labels[i],
+          checkOcclusion: false,  // Axes labels are UI elements, always visible
         })
       );
     }

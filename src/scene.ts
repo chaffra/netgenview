@@ -73,6 +73,8 @@ export class Scene extends WebGLScene {
 
   render_data;
   scene: THREE.Scene;
+  ambientLight: THREE.AmbientLight;
+  directionalLight: THREE.DirectionalLight;
   perspective_camera: THREE.PerspectiveCamera;
   orthographic_camera: THREE.OrthographicCamera;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
@@ -204,6 +206,7 @@ export class Scene extends WebGLScene {
       -100,
       100
     );
+    this.ortho_camera.position.set(0.0, 0.0, 3);
 
     this.perspective_camera.aspect = aspect;
     this.perspective_camera.updateProjectionMatrix();
@@ -282,6 +285,9 @@ export class Scene extends WebGLScene {
     uniforms.dark_backside = new THREE.Uniform(true);
 
     this.render_objects = [];
+
+    // Create THREE.Scene for built-in materials (Phong, Lambert, Standard)
+    this.scene = new THREE.Scene();
 
     this.render_data = render_data;
     this.funcdim = render_data.funcdim;
@@ -389,6 +395,15 @@ export class Scene extends WebGLScene {
     );
 
     this.gui = gui;
+
+    // Create Three.js lights for built-in materials, configured from GUI Light settings
+    const lightSettings = this.gui.settings.Light;
+    this.ambientLight = new THREE.AmbientLight(0xffffff, lightSettings.ambient);
+    this.scene.add(this.ambientLight);
+
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, lightSettings.diffuse);
+    this.directionalLight.position.copy(light_dir);
+    this.scene.add(this.directionalLight);
 
     this.addRenderObject(
       new Colorbar(this.render_data, this.uniforms, [], this.container)
@@ -691,6 +706,10 @@ export class Scene extends WebGLScene {
       gui_status: this.gui.settings,
       mode,
       renderer: this.renderer,
+      scene: this.scene,
+      ambientLight: this.ambientLight,
+      directionalLight: this.directionalLight,
+      render_objects: this.render_objects_per_mode['default'] || [],  // Add render objects for raycasting
     };
 
     if (mode == 'locate') this.uniforms.function_mode.value = 8;
